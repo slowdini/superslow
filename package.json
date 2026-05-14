@@ -14,5 +14,11 @@
     "test:gemini": "bun run --filter gemini test",
     "version": "node scripts/bump-version.js",
     "publish:all": "bun run --filter '*' publish --access public"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.15",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.4",
+    "markdownlint-cli2": "^0.22.1"
   }
 }
