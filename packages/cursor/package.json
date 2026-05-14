@@ -1,8 +1,9 @@
 {
-  "name": "@slowdini/superpowers-cursor",
+  "name": "@slowdini/superslow-cursor",
   "version": "5.1.0",
-  "description": "Superpowers integration for Cursor",
+  "description": "Superslow integration for Cursor",
+  "private": true,
   "peerDependencies": {
-    "@slowdini/superpowers-core": "workspace:*"
+    "@slowdini/superslow-core": "workspace:*"
   }
 }
