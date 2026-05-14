@@ -1,0 +1,8 @@
+{
+  "name": "@slowdini/superpowers-claude",
+  "version": "5.1.0",
+  "description": "Superpowers integration for Claude Code",
+  "peerDependencies": {
+    "@slowdini/superpowers-core": "workspace:*"
+  }
+}

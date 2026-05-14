@@ -9,8 +9,21 @@ import path from 'path';
 import fs from 'fs';
 import os from 'os';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 
+const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Resolve core skills directory at runtime
+// Works in both workspace (symlinked) and npm-installed contexts
+let superpowersSkillsDir;
+try {
+  const corePackageJson = require.resolve('@slowdini/superpowers-core/package.json');
+  superpowersSkillsDir = path.join(path.dirname(corePackageJson), 'skills');
+} catch {
+  // Fallback for development when core is not yet installed
+  superpowersSkillsDir = path.resolve(__dirname, '../../core/skills');
+}
 
 // Simple frontmatter extraction (avoid dependency on skills-core for bootstrap)
 const extractAndStripFrontmatter = (content) => {
@@ -54,7 +67,6 @@ let _bootstrapCache = undefined; // undefined = not yet loaded, null = file miss
 
 export const SuperpowersPlugin = async ({ client, directory }) => {
   const homeDir = os.homedir();
-  const superpowersSkillsDir = path.resolve(__dirname, '../../skills');
   const envConfigDir = normalizePath(process.env.OPENCODE_CONFIG_DIR, homeDir);
   const configDir = envConfigDir || path.join(homeDir, '.config/opencode');
 

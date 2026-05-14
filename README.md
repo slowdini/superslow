@@ -122,7 +122,7 @@ already use it in another harness.
 - Tell OpenCode:
 
   ```
-  Fetch and follow instructions from https://raw.githubusercontent.com/obra/superpowers/refs/heads/main/.opencode/INSTALL.md
+  Fetch and follow instructions from https://raw.githubusercontent.com/obra/superpowers/refs/heads/main/packages/opencode/INSTALL.md
   ```
 
 - Detailed docs: [docs/README.opencode.md](docs/README.opencode.md)
@@ -150,6 +150,17 @@ already use it in another harness.
   ```bash
   copilot plugin install superpowers@superpowers-marketplace
   ```
+
+## Repository Structure
+
+This is a monorepo managed with [Bun workspaces](https://bun.sh/docs/install/workspaces).
+
+- `packages/core/` — Skills, assets, and cross-cutting tests (published as `@slowdini/superpowers-core`)
+- `packages/claude/` — Claude Code plugin
+- `packages/codex/` — OpenAI Codex plugin
+- `packages/cursor/` — Cursor plugin
+- `packages/opencode/` — OpenCode plugin (published as `@slowdini/superpowers-opencode`)
+- `packages/gemini/` — Gemini CLI extension (published as `@slowdini/superpowers-gemini`)
 
 ## The Basic Workflow
 

@@ -1,0 +1,8 @@
+{
+  "name": "@slowdini/superpowers-codex",
+  "version": "5.1.0",
+  "description": "Superpowers integration for OpenAI Codex",
+  "peerDependencies": {
+    "@slowdini/superpowers-core": "workspace:*"
+  }
+}

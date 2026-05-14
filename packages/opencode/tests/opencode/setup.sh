@@ -14,22 +14,22 @@ export XDG_CONFIG_HOME="$TEST_HOME/.config"
 export OPENCODE_CONFIG_DIR="$TEST_HOME/.config/opencode"
 
 # Standard install layout:
-#   $OPENCODE_CONFIG_DIR/superpowers/             ← package root
-#   $OPENCODE_CONFIG_DIR/superpowers/skills/      ← skills dir (../../skills from plugin)
-#   $OPENCODE_CONFIG_DIR/superpowers/.opencode/plugins/superpowers.js ← plugin file
-#   $OPENCODE_CONFIG_DIR/plugins/superpowers.js   ← symlink OpenCode reads
+#   $OPENCODE_CONFIG_DIR/superpowers/                   ← package root
+#   $OPENCODE_CONFIG_DIR/superpowers/packages/core/skills/  ← skills dir
+#   $OPENCODE_CONFIG_DIR/superpowers/packages/opencode/plugins/superpowers.js ← plugin file
+#   $OPENCODE_CONFIG_DIR/plugins/superpowers.js         ← symlink OpenCode reads
 
 SUPERPOWERS_DIR="$OPENCODE_CONFIG_DIR/superpowers"
 SUPERPOWERS_SKILLS_DIR="$SUPERPOWERS_DIR/skills"
-SUPERPOWERS_PLUGIN_FILE="$SUPERPOWERS_DIR/.opencode/plugins/superpowers.js"
+SUPERPOWERS_PLUGIN_FILE="$SUPERPOWERS_DIR/packages/opencode/plugins/superpowers.js"
 
 # Install skills
 mkdir -p "$SUPERPOWERS_DIR"
-cp -r "$REPO_ROOT/skills" "$SUPERPOWERS_DIR/"
+cp -r "$REPO_ROOT/packages/core/skills" "$SUPERPOWERS_DIR/"
 
 # Install plugin
 mkdir -p "$(dirname "$SUPERPOWERS_PLUGIN_FILE")"
-cp "$REPO_ROOT/.opencode/plugins/superpowers.js" "$SUPERPOWERS_PLUGIN_FILE"
+cp "$REPO_ROOT/packages/opencode/plugins/superpowers.js" "$SUPERPOWERS_PLUGIN_FILE"
 
 # Register plugin via symlink (what OpenCode actually reads)
 mkdir -p "$OPENCODE_CONFIG_DIR/plugins"

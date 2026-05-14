@@ -1,7 +1,6 @@
 {
   "name": "superpowers",
-  "displayName": "Superpowers",
-  "description": "Core skills library: TDD, debugging, collaboration patterns, and proven techniques",
+  "description": "Core skills library for Claude Code: TDD, debugging, collaboration patterns, and proven techniques",
   "version": "5.1.0",
   "author": {
     "name": "Jesse Vincent",
@@ -18,8 +17,8 @@
     "best-practices",
     "workflows"
   ],
-  "skills": "./skills/",
+  "skills": "../core/skills/",
   "agents": "./agents/",
   "commands": "./commands/",
-  "hooks": "./hooks/hooks-cursor.json"
+  "hooks": "./hooks/hooks.json"
 }
