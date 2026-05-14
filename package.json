@@ -3,7 +3,9 @@
   "private": true,
   "version": "5.1.0",
   "type": "module",
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "test": "bun run --filter '*' test",
     "test:core": "bun run --filter core test",
@@ -15,7 +17,7 @@
     "version": "node scripts/bump-version.js",
     "publish:all": "bun run --filter '*' publish --access public",
     "lint": "biome check . && markdownlint-cli2 '**/*.md' '!**/node_modules/**' '!**/.worktrees/**'",
-    "format": "biome check --write . && markdownlint-cli2 --fix '**/*.md' '!**/node_modules/**' '!**/.worktrees/**'",
+    "format": "biome format --write . && markdownlint-cli2 --fix '**/*.md' '!**/node_modules/**' '!**/.worktrees/**'",
     "prepare": "husky"
   },
   "devDependencies": {
