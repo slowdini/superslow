@@ -15,6 +15,19 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Context:** If working in an isolated worktree, it should have been created via the `superpowers:using-git-worktrees` skill at execution time.
 
+**Branch safety:** Before writing the plan document, verify the current branch is safe:
+
+```bash
+BRANCH=$(git branch --show-current)
+DEFAULT=$(git rev-parse --abbrev-ref origin/HEAD 2>/dev/null | sed 's|^origin/||')
+if [ "$BRANCH" = "$DEFAULT" ] || [ "$BRANCH" = "main" ] || [ "$BRANCH" = "master" ]; then
+    # On a protected branch — invoke using-git-worktrees to create isolation
+fi
+```
+
+- **If already isolated:** Write and commit in place
+- **If on `main`/`master`:** Invoke `superpowers:using-git-worktrees` skill first, then write and commit in the worktree
+
 **Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
 - (User preferences for plan location override this default)
 
