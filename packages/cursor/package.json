@@ -1,0 +1,8 @@
+{
+  "name": "@slowdini/superpowers-cursor",
+  "version": "5.1.0",
+  "description": "Superpowers integration for Cursor",
+  "peerDependencies": {
+    "@slowdini/superpowers-core": "workspace:*"
+  }
+}

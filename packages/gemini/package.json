@@ -1,0 +1,8 @@
+{
+  "name": "@slowdini/superpowers-gemini",
+  "version": "5.1.0",
+  "description": "Superpowers integration for Gemini CLI",
+  "peerDependencies": {
+    "@slowdini/superpowers-core": "workspace:*"
+  }
+}
