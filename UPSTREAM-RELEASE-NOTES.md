@@ -1,4 +1,9 @@
-# Superpowers Release Notes
+# Upstream (obra/superpowers) Release Notes — Archive
+
+> Historical release notes from [obra/superpowers](https://github.com/obra/superpowers)
+> at v5.1.0 and earlier. These notes describe the upstream project from which
+> Superslow was forked. Superslow's own release notes live in
+> [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## v5.1.0 (2026-04-30)
 
