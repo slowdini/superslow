@@ -1,6 +1,18 @@
 {
   "name": "superpowers",
+  "private": true,
   "version": "5.1.0",
   "type": "module",
-  "main": ".opencode/plugins/superpowers.js"
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "test": "bun run --filter '*' test",
+    "test:core": "bun run --filter core test",
+    "test:claude": "bun run --filter claude test",
+    "test:codex": "bun run --filter codex test",
+    "test:cursor": "bun run --filter cursor test",
+    "test:opencode": "bun run --filter opencode test",
+    "test:gemini": "bun run --filter gemini test",
+    "version": "node scripts/bump-version.js",
+    "publish:all": "bun run --filter '*' publish --access public"
+  }
 }
