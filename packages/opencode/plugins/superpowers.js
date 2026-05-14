@@ -22,7 +22,7 @@ try {
   superpowersSkillsDir = path.join(path.dirname(corePackageJson), 'skills');
 } catch {
   // Fallback for development when core is not yet installed
-  superpowersSkillsDir = path.resolve(__dirname, '../core/skills');
+  superpowersSkillsDir = path.resolve(__dirname, '../../core/skills');
 }
 
 // Simple frontmatter extraction (avoid dependency on skills-core for bootstrap)
