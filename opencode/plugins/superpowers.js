@@ -11,7 +11,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const superpowersSkillsDir = path.resolve(__dirname, "../../core/skills");
+const superpowersSkillsDir = path.resolve(__dirname, "../../skills");
 const usingSuperpowersSkillPath = path.join(
   superpowersSkillsDir,
   "using-superpowers",

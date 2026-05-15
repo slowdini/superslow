@@ -17,10 +17,10 @@ else
 fi
 
 mkdir -p "$HOME/.cursor/plugins/local"
-ln -sfn "$REPO_DIR/packages/cursor" "$HOME/.cursor/plugins/local/superpowers"
+ln -sfn "$REPO_DIR/cursor" "$HOME/.cursor/plugins/local/superpowers"
 
 echo
 echo "Superslow installed for Cursor at:"
-echo "  $HOME/.cursor/plugins/local/superpowers -> $REPO_DIR/packages/cursor"
+echo "  $HOME/.cursor/plugins/local/superpowers -> $REPO_DIR/cursor"
 echo
 echo "Restart Cursor to load the plugin."
