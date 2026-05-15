@@ -6,7 +6,7 @@
   "plugins": [
     {
       "name": "superpowers",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "source": {
         "source": "local",
         "path": "../../packages/codex"

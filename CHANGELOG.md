@@ -5,6 +5,21 @@ All notable changes to Superslow are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] — 2026-05-15
+
+Patch release fixing installation issues for the OpenCode and Gemini CLI
+harnesses.
+
+### Fixed
+
+- **OpenCode:** Root `package.json` no longer declares `exports` and `files`
+  fields that broke Git-install resolution in some Bun environments. The
+  root `main` field now points directly at the plugin entrypoint.
+- **Gemini CLI:** Extension manifest moved from `packages/gemini/` to the
+  repository root as `gemini-extension.json`. The monorepo restructure in
+  v1.0.0 had placed it in a subdirectory, making it invisible to
+  `gemini extensions install`.
+
 ## [1.0.0] — 2026-05-14
 
 First release of Superslow. Forked from

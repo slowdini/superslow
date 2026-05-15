@@ -16,7 +16,7 @@ const files = [
   "packages/claude/plugin.json",
   "packages/codex/plugin.json",
   "packages/cursor/.cursor-plugin/plugin.json",
-  "extension.json",
+  "gemini-extension.json",
   "marketplace.json",
   ".agents/plugins/marketplace.json",
 ];

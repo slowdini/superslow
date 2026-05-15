@@ -1,7 +1,7 @@
 {
   "name": "superslow",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Superslow — a fork of obra/superpowers, rebranded as its own product",
   "type": "module",
   "main": "./packages/opencode/plugins/superpowers.js",
