@@ -2,6 +2,7 @@
   "name": "@slowdini/superslow-core",
   "version": "1.0.0",
   "description": "Core skills library for Superslow",
+  "private": true,
   "author": {
     "name": "Max Haarhaus",
     "email": "samiamorwas@gmail.com"
@@ -11,10 +12,12 @@
   "license": "MIT",
   "files": [
     "skills/",
-    "assets/"
+    "assets/",
+    "paths.js"
   ],
   "exports": {
     "./skills/*": "./skills/*",
-    "./assets/*": "./assets/*"
+    "./assets/*": "./assets/*",
+    "./paths": "./paths.js"
   }
 }

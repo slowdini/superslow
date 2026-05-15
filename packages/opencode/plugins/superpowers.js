@@ -6,26 +6,18 @@
  */
 
 import fs from "node:fs";
-import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-// Resolve core skills directory at runtime
-// Works in both workspace (symlinked) and npm-installed contexts
-let superpowersSkillsDir;
-try {
-  const corePackageJson = require.resolve(
-    "@slowdini/superpowers-core/package.json",
-  );
-  superpowersSkillsDir = path.join(path.dirname(corePackageJson), "skills");
-} catch {
-  // Fallback for development when core is not yet installed
-  superpowersSkillsDir = path.resolve(__dirname, "../../core/skills");
-}
+const superpowersSkillsDir = path.resolve(__dirname, "../../core/skills");
+const usingSuperpowersSkillPath = path.join(
+  superpowersSkillsDir,
+  "using-superpowers",
+  "SKILL.md",
+);
+const bootstrapMarker = "SUPERSLOW_OPENCODE_BOOTSTRAP";
 
 // Simple frontmatter extraction (avoid dependency on skills-core for bootstrap)
 const extractAndStripFrontmatter = (content) => {
@@ -84,17 +76,12 @@ export const SuperpowersPlugin = async ({
     if (_bootstrapCache !== undefined) return _bootstrapCache;
 
     // Try to load using-superpowers skill
-    const skillPath = path.join(
-      superpowersSkillsDir,
-      "using-superpowers",
-      "SKILL.md",
-    );
-    if (!fs.existsSync(skillPath)) {
+    if (!fs.existsSync(usingSuperpowersSkillPath)) {
       _bootstrapCache = null;
       return null;
     }
 
-    const fullContent = fs.readFileSync(skillPath, "utf8");
+    const fullContent = fs.readFileSync(usingSuperpowersSkillPath, "utf8");
     const { content } = extractAndStripFrontmatter(fullContent);
 
     const toolMapping = `**Tool Mapping for OpenCode:**
@@ -106,7 +93,8 @@ When skills reference tools you don't have, substitute OpenCode equivalents:
 
 Use OpenCode's native \`skill\` tool to list and load skills.`;
 
-    _bootstrapCache = `<EXTREMELY_IMPORTANT>
+    _bootstrapCache = `<!-- ${bootstrapMarker} -->
+<EXTREMELY_IMPORTANT>
 You have superpowers.
 
 **IMPORTANT: The using-superpowers skill content is included below. It is ALREADY LOADED - you are currently following it. Do NOT use the skill tool to load "using-superpowers" again - that would be redundant.**
@@ -127,7 +115,10 @@ ${toolMapping}
     config: async (config) => {
       config.skills = config.skills || {};
       config.skills.paths = config.skills.paths || [];
-      if (!config.skills.paths.includes(superpowersSkillsDir)) {
+      if (
+        fs.existsSync(superpowersSkillsDir) &&
+        !config.skills.paths.includes(superpowersSkillsDir)
+      ) {
         config.skills.paths.push(superpowersSkillsDir);
       }
     },
@@ -147,18 +138,16 @@ ${toolMapping}
       const firstUser = output.messages.find((m) => m.info.role === "user");
       if (!firstUser?.parts.length) return;
 
-      // Guard: skip if first user message already contains bootstrap.
+      // Guard: skip only when the leading part is the bootstrap we injected.
       // This prevents double injection when OpenCode passes an already
       // transformed in-memory message array through the hook again.
       if (
-        firstUser.parts.some(
-          (p) => p.type === "text" && p.text.includes("EXTREMELY_IMPORTANT"),
-        )
+        firstUser.parts[0]?.type === "text" &&
+        firstUser.parts[0].text.includes(bootstrapMarker)
       )
         return;
 
-      const ref = firstUser.parts[0];
-      firstUser.parts.unshift({ ...ref, type: "text", text: bootstrap });
+      firstUser.parts.unshift({ type: "text", text: bootstrap });
     },
   };
 };

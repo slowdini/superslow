@@ -2,8 +2,5 @@
   "name": "@slowdini/superslow-cursor",
   "version": "1.0.0",
   "description": "Superslow integration for Cursor",
-  "private": true,
-  "peerDependencies": {
-    "@slowdini/superslow-core": "workspace:*"
-  }
+  "private": true
 }

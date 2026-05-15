@@ -2,8 +2,5 @@
   "name": "@slowdini/superslow-claude",
   "version": "1.0.0",
   "description": "Superslow integration for Claude Code",
-  "private": true,
-  "peerDependencies": {
-    "@slowdini/superslow-core": "workspace:*"
-  }
+  "private": true
 }

@@ -2,8 +2,5 @@
   "name": "@slowdini/superslow-gemini",
   "version": "1.0.0",
   "description": "Superslow integration for Gemini CLI",
-  "private": true,
-  "peerDependencies": {
-    "@slowdini/superslow-core": "workspace:*"
-  }
+  "private": true
 }
