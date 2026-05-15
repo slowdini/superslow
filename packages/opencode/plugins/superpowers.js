@@ -11,20 +11,63 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const workspaceRequire = createRequire(
+  path.join(process.cwd(), "package.json"),
+);
+const localFallbackSkillsDir = path.resolve(__dirname, "../../core/skills");
+const localFallbackUsingSuperpowersSkillPath = path.join(
+  localFallbackSkillsDir,
+  "using-superpowers",
+  "SKILL.md",
+);
+
+const isCorePathsUnavailableError = (error) => {
+  if (!error || typeof error !== "object") return false;
+
+  const code = error.code;
+  const message = typeof error.message === "string" ? error.message : "";
+  const referencesCorePaths =
+    message.includes("@slowdini/superslow-core/paths") ||
+    message.includes("@slowdini/superslow-core") ||
+    message.includes('Package subpath "./paths"') ||
+    message.includes("Package subpath './paths'");
+
+  return (
+    referencesCorePaths &&
+    (code === "ERR_MODULE_NOT_FOUND" ||
+      code === "MODULE_NOT_FOUND" ||
+      code === "ERR_PACKAGE_PATH_NOT_EXPORTED")
+  );
+};
 
 // Resolve core skills directory at runtime
 // Works in both workspace (symlinked) and npm-installed contexts
 let superpowersSkillsDir;
+let usingSuperpowersSkillPath;
 try {
-  const corePackageJson = require.resolve(
-    "@slowdini/superpowers-core/package.json",
-  );
-  superpowersSkillsDir = path.join(path.dirname(corePackageJson), "skills");
-} catch {
-  // Fallback for development when core is not yet installed
-  superpowersSkillsDir = path.resolve(__dirname, "../../core/skills");
+  const corePathsModule = await import("@slowdini/superslow-core/paths");
+  const corePaths = corePathsModule.default ?? corePathsModule;
+  superpowersSkillsDir = corePaths.skillsDir;
+  usingSuperpowersSkillPath = corePaths.usingSuperpowersSkillPath;
+} catch (error) {
+  if (!isCorePathsUnavailableError(error)) throw error;
+
+  try {
+    const corePaths = workspaceRequire("@slowdini/superslow-core/paths");
+    superpowersSkillsDir = corePaths.skillsDir;
+    usingSuperpowersSkillPath = corePaths.usingSuperpowersSkillPath;
+  } catch (requireError) {
+    if (!isCorePathsUnavailableError(requireError)) throw requireError;
+
+    if (fs.existsSync(localFallbackSkillsDir)) {
+      superpowersSkillsDir = localFallbackSkillsDir;
+    }
+
+    if (fs.existsSync(localFallbackUsingSuperpowersSkillPath)) {
+      usingSuperpowersSkillPath = localFallbackUsingSuperpowersSkillPath;
+    }
+  }
 }
 
 // Simple frontmatter extraction (avoid dependency on skills-core for bootstrap)
@@ -84,17 +127,17 @@ export const SuperpowersPlugin = async ({
     if (_bootstrapCache !== undefined) return _bootstrapCache;
 
     // Try to load using-superpowers skill
-    const skillPath = path.join(
-      superpowersSkillsDir,
-      "using-superpowers",
-      "SKILL.md",
-    );
-    if (!fs.existsSync(skillPath)) {
+    if (!usingSuperpowersSkillPath) {
       _bootstrapCache = null;
       return null;
     }
 
-    const fullContent = fs.readFileSync(skillPath, "utf8");
+    if (!fs.existsSync(usingSuperpowersSkillPath)) {
+      _bootstrapCache = null;
+      return null;
+    }
+
+    const fullContent = fs.readFileSync(usingSuperpowersSkillPath, "utf8");
     const { content } = extractAndStripFrontmatter(fullContent);
 
     const toolMapping = `**Tool Mapping for OpenCode:**
@@ -127,7 +170,10 @@ ${toolMapping}
     config: async (config) => {
       config.skills = config.skills || {};
       config.skills.paths = config.skills.paths || [];
-      if (!config.skills.paths.includes(superpowersSkillsDir)) {
+      if (
+        superpowersSkillsDir &&
+        !config.skills.paths.includes(superpowersSkillsDir)
+      ) {
         config.skills.paths.push(superpowersSkillsDir);
       }
     },

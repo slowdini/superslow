@@ -3,8 +3,9 @@
 # Creates an isolated test environment with proper plugin installation
 set -euo pipefail
 
-# Get the repository root (two levels up from tests/opencode/)
-REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+# Get the repository root from this sourced script location.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 
 # Create temp home directory for isolation
 export TEST_HOME

@@ -10,7 +10,7 @@ Add Superslow to the `plugin` array in your `opencode.json` (global or project-l
 
 ```json
 {
-  "plugin": ["@slowdini/superslow-opencode@git+https://github.com/slowdini/superslow.git"]
+  "plugin": ["@slowdini/superslow-opencode@1.0.0"]
 }
 ```
 
@@ -50,16 +50,17 @@ use skill tool to load superpowers/brainstorming
 
 ## Updating
 
-OpenCode installs Superslow through a git-backed package spec. Some OpenCode
-and Bun versions pin that resolved git dependency in a lockfile or cache, so a
-restart may not pick up the newest Superslow commit. If updates do not appear,
-clear OpenCode's package cache or reinstall the plugin.
+OpenCode installs Superslow from the npm registry. To update, change the
+version in `opencode.json` to the newer published release and restart
+OpenCode. Some OpenCode and Bun versions pin the resolved package in a lockfile
+or cache, so a restart may not pick up the new version immediately. If updates
+do not appear, clear OpenCode's package cache or reinstall the plugin.
 
-To pin a specific version:
+The `plugin` entry can point at any published version, for example:
 
 ```json
 {
-  "plugin": ["@slowdini/superslow-opencode@git+https://github.com/slowdini/superslow.git#v1.0.0"]
+  "plugin": ["@slowdini/superslow-opencode@1.0.0"]
 }
 ```
 
@@ -73,14 +74,12 @@ To pin a specific version:
 
 ### Windows install issues
 
-Some Windows OpenCode builds have upstream installer issues with git-backed
-plugin specs, including cache paths for `git+https` URLs and Bun not finding
-`git.exe` even when it works in a normal terminal. If OpenCode cannot install
-the plugin, try installing with system npm and pointing OpenCode at the local
-package:
+Some Windows OpenCode builds have upstream installer issues in OpenCode's
+plugin installer. If OpenCode cannot install the published package, try
+installing it with system npm and pointing OpenCode at the local package:
 
 ```powershell
-npm install @slowdini/superslow-opencode@git+https://github.com/slowdini/superslow.git --prefix "$HOME\.config\opencode"
+npm install @slowdini/superslow-opencode@1.0.0 --prefix "$HOME\.config\opencode"
 ```
 
 Then use the installed package path in `opencode.json`:

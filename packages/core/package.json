@@ -11,10 +11,12 @@
   "license": "MIT",
   "files": [
     "skills/",
-    "assets/"
+    "assets/",
+    "paths.js"
   ],
   "exports": {
     "./skills/*": "./skills/*",
-    "./assets/*": "./assets/*"
+    "./assets/*": "./assets/*",
+    "./paths": "./paths.js"
   }
 }

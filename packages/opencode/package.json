@@ -6,6 +6,6 @@
   "main": "plugins/superpowers.js",
   "dependencies": {
     "@opencode-ai/plugin": "1.14.29",
-    "@slowdini/superslow-core": "workspace:*"
+    "@slowdini/superslow-core": "1.0.0"
   }
 }
