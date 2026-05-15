@@ -1,6 +1,6 @@
 {
   "name": "@slowdini/superslow-opencode",
-  "version": "5.1.0",
+  "version": "1.0.0",
   "description": "Superslow integration for OpenCode",
   "type": "module",
   "main": "plugins/superpowers.js",
