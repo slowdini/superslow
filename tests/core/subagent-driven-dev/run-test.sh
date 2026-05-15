@@ -29,7 +29,7 @@ done
 
 # Default plugin dir to parent of tests directory
 if [[ -z "$PLUGIN_DIR" ]]; then
-  PLUGIN_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+  PLUGIN_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 fi
 
 # Verify test exists

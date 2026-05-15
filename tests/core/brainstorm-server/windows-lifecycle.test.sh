@@ -17,7 +17,7 @@ set -uo pipefail
 # ========== Configuration ==========
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_ROOT="${SUPERPOWERS_ROOT:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+REPO_ROOT="${SUPERPOWERS_ROOT:-$(cd "$SCRIPT_DIR/../../.." && pwd)}"
 START_SCRIPT="$REPO_ROOT/skills/brainstorming/scripts/start-server.sh"
 STOP_SCRIPT="$REPO_ROOT/skills/brainstorming/scripts/stop-server.sh"
 SERVER_JS="$REPO_ROOT/skills/brainstorming/scripts/server.js"
