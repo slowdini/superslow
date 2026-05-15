@@ -12,45 +12,43 @@
       },
     },
     "packages/claude": {
-      "name": "@slowdini/superpowers-claude",
+      "name": "@slowdini/superslow-claude",
       "version": "5.1.0",
       "peerDependencies": {
-        "@slowdini/superpowers-core": "workspace:*",
+        "@slowdini/superslow-core": "workspace:*",
       },
     },
     "packages/codex": {
-      "name": "@slowdini/superpowers-codex",
+      "name": "@slowdini/superslow-codex",
       "version": "5.1.0",
       "peerDependencies": {
-        "@slowdini/superpowers-core": "workspace:*",
+        "@slowdini/superslow-core": "workspace:*",
       },
     },
     "packages/core": {
-      "name": "@slowdini/superpowers-core",
+      "name": "@slowdini/superslow-core",
       "version": "5.1.0",
     },
     "packages/cursor": {
-      "name": "@slowdini/superpowers-cursor",
+      "name": "@slowdini/superslow-cursor",
       "version": "5.1.0",
       "peerDependencies": {
-        "@slowdini/superpowers-core": "workspace:*",
+        "@slowdini/superslow-core": "workspace:*",
       },
     },
     "packages/gemini": {
-      "name": "@slowdini/superpowers-gemini",
+      "name": "@slowdini/superslow-gemini",
       "version": "5.1.0",
       "peerDependencies": {
-        "@slowdini/superpowers-core": "workspace:*",
+        "@slowdini/superslow-core": "workspace:*",
       },
     },
     "packages/opencode": {
-      "name": "@slowdini/superpowers-opencode",
+      "name": "@slowdini/superslow-opencode",
       "version": "5.1.0",
       "dependencies": {
         "@opencode-ai/plugin": "1.14.29",
-      },
-      "peerDependencies": {
-        "@slowdini/superpowers-core": "workspace:*",
+        "@slowdini/superslow-core": "workspace:*",
       },
     },
   },
@@ -97,17 +95,17 @@
 
     "@sindresorhus/merge-streams": ["@sindresorhus/merge-streams@4.0.0", "", {}, "sha512-tlqY9xq5ukxTUZBmoOp+m61cqwQD5pHJtFY3Mn8CA8ps6yghLH/Hw8UPdqg4OLmFW3IFlcXnQNmo/dh8HzXYIQ=="],
 
-    "@slowdini/superpowers-claude": ["@slowdini/superpowers-claude@workspace:packages/claude"],
+    "@slowdini/superslow-claude": ["@slowdini/superslow-claude@workspace:packages/claude"],
 
-    "@slowdini/superpowers-codex": ["@slowdini/superpowers-codex@workspace:packages/codex"],
+    "@slowdini/superslow-codex": ["@slowdini/superslow-codex@workspace:packages/codex"],
 
-    "@slowdini/superpowers-core": ["@slowdini/superpowers-core@workspace:packages/core"],
+    "@slowdini/superslow-core": ["@slowdini/superslow-core@workspace:packages/core"],
 
-    "@slowdini/superpowers-cursor": ["@slowdini/superpowers-cursor@workspace:packages/cursor"],
+    "@slowdini/superslow-cursor": ["@slowdini/superslow-cursor@workspace:packages/cursor"],
 
-    "@slowdini/superpowers-gemini": ["@slowdini/superpowers-gemini@workspace:packages/gemini"],
+    "@slowdini/superslow-gemini": ["@slowdini/superslow-gemini@workspace:packages/gemini"],
 
-    "@slowdini/superpowers-opencode": ["@slowdini/superpowers-opencode@workspace:packages/opencode"],
+    "@slowdini/superslow-opencode": ["@slowdini/superslow-opencode@workspace:packages/opencode"],
 
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
 

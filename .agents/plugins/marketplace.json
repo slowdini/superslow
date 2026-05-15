@@ -1,0 +1,21 @@
+{
+  "name": "superslow",
+  "interface": {
+    "displayName": "Superslow"
+  },
+  "plugins": [
+    {
+      "name": "superpowers",
+      "version": "1.0.0",
+      "source": {
+        "source": "local",
+        "path": "../../packages/codex"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

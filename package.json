@@ -1,7 +1,8 @@
 {
-  "name": "superpowers",
+  "name": "superslow",
   "private": true,
-  "version": "5.1.0",
+  "version": "1.0.0",
+  "description": "Superslow — a fork of obra/superpowers, rebranded as its own product",
   "type": "module",
   "workspaces": [
     "packages/*"

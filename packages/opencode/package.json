@@ -1,13 +1,11 @@
 {
-  "name": "@slowdini/superpowers-opencode",
-  "version": "5.1.0",
-  "description": "Superpowers integration for OpenCode",
+  "name": "@slowdini/superslow-opencode",
+  "version": "1.0.0",
+  "description": "Superslow integration for OpenCode",
   "type": "module",
   "main": "plugins/superpowers.js",
   "dependencies": {
-    "@opencode-ai/plugin": "1.14.29"
-  },
-  "peerDependencies": {
-    "@slowdini/superpowers-core": "workspace:*"
+    "@opencode-ai/plugin": "1.14.29",
+    "@slowdini/superslow-core": "workspace:*"
   }
 }
