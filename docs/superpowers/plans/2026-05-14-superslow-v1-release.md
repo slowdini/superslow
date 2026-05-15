@@ -4,9 +4,9 @@
 
 **Goal:** Ship v1.0.0 of Superslow — a rebranded fork of obra/superpowers at v5.1.0 — installable across all five supported harnesses (Claude Code, Codex, Cursor, OpenCode, Gemini) from `slowdini/superslow` self-hosted distribution.
 
-**Architecture:** Monorepo with one core package + five harness packages. Three harnesses (Claude, Codex, Cursor) get manifest-file moves to match their tool's expected layout; the other two stay structurally as-is. All content (URLs, author, package names, version, displayName) is retargeted from upstream to Superslow. Only `core` and `opencode` are published to npm; the other four ship via git-based marketplace/extension install paths. Release is manual for v1.
+**Architecture:** Monorepo with one core package + five harness packages. Three harnesses (Claude, Codex, Cursor) get manifest-file moves to match their tool's expected layout; the other two stay structurally as-is. All content (URLs, author, package names, version, displayName) is retargeted from upstream to Superslow. All six workspace packages remain private internal metadata, OpenCode installs through the repo-root Git package surface, and releases are cut manually with Git tags plus GitHub releases for v1.
 
-**Tech Stack:** Bun workspaces, npm publish for two packages, JSON manifests per harness, Markdown docs, sh install helper for Cursor.
+**Tech Stack:** Bun workspaces, git-tagged repo releases, JSON manifests per harness, Markdown docs, sh install helper for Cursor.
 
 **Spec reference:** `docs/superpowers/specs/2026-05-14-superslow-v1-release-design.md`.
 
@@ -46,7 +46,7 @@ Expected: `Switched to a new branch 'release/v1.0.0'`.
 
 - [ ] **Step 1: Create root `marketplace.json`**
 
-Write the following to `/Users/maximilianhaarhaus/Projects/superpowers/marketplace.json`:
+Write the following to `marketplace.json`:
 
 ```json
 {
@@ -550,7 +550,6 @@ The current root `package.json` has `"name": "superpowers"`. Replace its full co
     "test:opencode": "bun run --filter opencode test",
     "test:gemini": "bun run --filter gemini test",
     "version": "node scripts/bump-version.js",
-    "publish:all": "bun run --filter '*' publish --access public",
     "check": "biome check --write . && markdownlint-cli2 --fix '**/*.md' '!**/node_modules/**' '!**/.worktrees/**'",
     "prepare": "husky"
   },
@@ -1458,35 +1457,22 @@ git push origin v1.0.0
 
 Expected: `v1.0.0` appears in `git ls-remote --tags origin`.
 
-### Task 21: Publish `core` and `opencode` to npm
+### Task 21: Verify npm publication is no longer part of the release
 
-**Files:** none (npm publish).
+**Files:** none (verification only).
 
-- [ ] **Step 1: Verify npm login is active on the `@slowdini` org**
-
-```bash
-npm whoami
-npm access list packages @slowdini 2>&1 | head -5
-```
-
-Expected: your npm username is shown; you have publish rights on `@slowdini`. If `npm whoami` errors, run `npm login` first.
-
-- [ ] **Step 2: Publish all publishable packages**
+- [ ] **Step 1: Confirm the repo no longer advertises a publish script**
 
 ```bash
-bun run publish:all
+node -e 'const fs = require("node:fs"); const pkg = JSON.parse(fs.readFileSync("package.json", "utf8")); if (Object.keys(pkg.scripts || {}).some((name) => name === ["publish", "all"].join(":"))) { process.exit(1); }'
 ```
 
-Expected: `@slowdini/superslow-core@1.0.0` and `@slowdini/superslow-opencode@1.0.0` are published. The other four packages are marked `"private": true` and are skipped.
+Expected: exits successfully with no output.
 
-- [ ] **Step 3: Verify the publish**
+- [ ] **Step 2: Record that Git tags + GitHub releases are now the release boundary**
 
-```bash
-npm view @slowdini/superslow-core version
-npm view @slowdini/superslow-opencode version
-```
-
-Expected: both report `1.0.0`.
+No command. Update the surrounding task notes so OpenCode release verification
+uses the git-backed plugin install and Gemini remains a separate follow-up.
 
 ### Task 22: Create the GitHub release
 
@@ -1495,8 +1481,9 @@ Expected: both report `1.0.0`.
 - [ ] **Step 1: Extract the v1.0.0 changelog section to a temporary file**
 
 ```bash
-awk '/^## \[1\.0\.0\]/,/^## \[/{if (/^## \[/ && !/^## \[1\.0\.0\]/) exit; print}' CHANGELOG.md > /tmp/superslow-release-notes.md
-cat /tmp/superslow-release-notes.md
+RELEASE_NOTES_FILE="$(mktemp)"
+awk '/^## \[1\.0\.0\]/,/^## \[/{if (/^## \[/ && !/^## \[1\.0\.0\]/) exit; print}' CHANGELOG.md > "$RELEASE_NOTES_FILE"
+cat "$RELEASE_NOTES_FILE"
 ```
 
 Expected: only the `## [1.0.0]` section through (but not including) the next `## [` header.
@@ -1506,7 +1493,7 @@ Expected: only the `## [1.0.0]` section through (but not including) the next `##
 ```bash
 gh release create v1.0.0 \
   --title "Superslow 1.0.0" \
-  --notes-file /tmp/superslow-release-notes.md
+  --notes-file "$RELEASE_NOTES_FILE"
 ```
 
 Expected: returns a URL to the new release page.
@@ -1514,7 +1501,7 @@ Expected: returns a URL to the new release page.
 - [ ] **Step 3: Clean up the temp file**
 
 ```bash
-rm /tmp/superslow-release-notes.md
+rm "$RELEASE_NOTES_FILE"
 ```
 
 ### Task 23: Per-harness smoke tests
@@ -1602,4 +1589,4 @@ When all five harnesses pass the smoke test, v1.0.0 of Superslow is officially r
 
 - New branding artwork (logo, brand color) to replace upstream placeholders in `packages/codex/plugin.json` and `packages/core/assets/`
 - Submission to upstream-curated marketplaces (Anthropic's `claude-plugins-official`, OpenAI's `plugins`, Cursor's marketplace) — deferred from v1
-- GitHub Actions workflow to automate the tag → publish → release flow — deferred from v1
+- GitHub Actions workflow to automate the tag → GitHub release flow — deferred from v1

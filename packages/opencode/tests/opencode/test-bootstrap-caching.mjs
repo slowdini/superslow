@@ -1,90 +1,46 @@
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
+import fs from 'node:fs';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const [, , pluginPath, scenario] = process.argv;
+const supportedScenarios = ['present', 'missing-file', 'missing-skills-dir'];
+const bootstrapMarker = 'SUPERSLOW_OPENCODE_BOOTSTRAP';
 
-if (!pluginPath || !['present', 'missing', 'local-missing', 'unresolved'].includes(scenario)) {
-  console.error('Usage: node test-bootstrap-caching.mjs PLUGIN_PATH present|missing|local-missing|unresolved');
+if (!pluginPath || !supportedScenarios.includes(scenario)) {
+  console.error(
+    'Usage: node test-bootstrap-caching.mjs PLUGIN_PATH present|missing-file|missing-skills-dir'
+  );
   process.exit(2);
 }
 
-let existsCount = 0;
-let readCount = 0;
-
-const scriptDir = path.dirname(fileURLToPath(import.meta.url));
-const repoRoot = path.resolve(scriptDir, '../../../..');
-const isolatedCwd = fs.mkdtempSync(path.join(os.tmpdir(), 'bootstrap-caching-'));
-const consumerCorePackageDir = path.join(
-  isolatedCwd,
-  'node_modules',
-  '@slowdini',
-  'superslow-core'
-);
-const consumerSkillsDir = path.join(consumerCorePackageDir, 'skills');
-const consumerUsingSuperpowersSkillPath = path.join(
-  consumerSkillsDir,
+const expectedSkillsDir = path.resolve(path.dirname(pluginPath), '../../core/skills');
+const expectedUsingSuperpowersSkillPath = path.join(
+  expectedSkillsDir,
   'using-superpowers',
   'SKILL.md'
 );
-const consumerCoreRealpath = path.join(repoRoot, 'packages/core');
-const localFallbackUsingSuperpowersSkillPath = path.resolve(
-  path.dirname(pluginPath),
-  '../../core/skills/using-superpowers/SKILL.md'
-);
-const localFallbackSkillsDir = path.dirname(path.dirname(localFallbackUsingSuperpowersSkillPath));
-const expectedSkillsDir = scenario === 'local-missing'
-  ? localFallbackSkillsDir
-  : scenario === 'unresolved'
-    ? null
-    : path.join(consumerCoreRealpath, 'skills');
-const expectedUsingSuperpowersSkillPath = scenario === 'local-missing'
-  ? localFallbackUsingSuperpowersSkillPath
-  : scenario === 'unresolved'
-    ? null
-    : path.join(consumerCoreRealpath, 'skills/using-superpowers/SKILL.md');
 
-fs.writeFileSync(
-  path.join(isolatedCwd, 'package.json'),
-  JSON.stringify({
-    name: 'bootstrap-caching-consumer',
-    private: true,
-  })
-);
-
-if (scenario === 'present' || scenario === 'missing') {
-  fs.mkdirSync(path.dirname(consumerCorePackageDir), { recursive: true });
-  fs.symlinkSync(path.join(repoRoot, 'packages/core'), consumerCorePackageDir, 'dir');
-}
-
-process.chdir(isolatedCwd);
-
-process.on('exit', () => {
-  fs.rmSync(isolatedCwd, { recursive: true, force: true });
-});
+let existsCount = 0;
+let readCount = 0;
 
 const originalExistsSync = fs.existsSync;
 const originalReadFileSync = fs.readFileSync;
 
 fs.existsSync = function (...args) {
-  if (isBootstrapSkillPath(args[0])) {
+  if (normalizePath(args[0]) === normalizePath(expectedUsingSuperpowersSkillPath)) {
     existsCount += 1;
-    if ((scenario === 'missing' || scenario === 'local-missing' || scenario === 'unresolved') &&
-      normalizePath(args[0]) === normalizePath(expectedUsingSuperpowersSkillPath ?? localFallbackUsingSuperpowersSkillPath)) {
-      return false;
-    }
   }
   return originalExistsSync.apply(this, args);
 };
 
 fs.readFileSync = function (...args) {
-  if (isBootstrapSkillPath(args[0])) {
+  if (normalizePath(args[0]) === normalizePath(expectedUsingSuperpowersSkillPath)) {
     readCount += 1;
   }
   return originalReadFileSync.apply(this, args);
 };
 
+const pluginSource = originalReadFileSync(pluginPath, 'utf8');
 const mod = await import(pathToFileURL(pluginPath).href);
 const plugin = await mod.SuperpowersPlugin({ client: {}, directory: '.' });
 const config = {};
@@ -99,9 +55,22 @@ const secondOutput = makeOutput(`${scenario} bootstrap second step`);
 await transform({}, secondOutput);
 const afterSecond = { existsCount, readCount };
 
+const sameOutput = makeOutput(`user prompt mentions EXTREMELY_IMPORTANT`, {
+  type: 'text',
+  text: 'user prompt mentions EXTREMELY_IMPORTANT',
+  testOnlyField: 'should-not-be-copied',
+});
+await transform({}, sameOutput);
+const sameOutputBootstrapPartsAfterFirst = countBootstrapParts(sameOutput);
+const sameOutputFirstPart = sameOutput.messages[0].parts[0];
+await transform({}, sameOutput);
+const sameOutputBootstrapPartsAfterSecond = countBootstrapParts(sameOutput);
+
 const result = {
   scenario,
-  consumerProjectDir: isolatedCwd,
+  expectedSkillsDir,
+  expectedUsingSuperpowersSkillPath,
+  pluginStillReferencesCorePaths: pluginSource.includes('@slowdini/superslow-core/paths'),
   registeredSkillsPaths: config.skills?.paths ?? [],
   firstBootstrapParts: countBootstrapParts(firstOutput),
   secondBootstrapParts: countBootstrapParts(secondOutput),
@@ -109,15 +78,21 @@ const result = {
   secondReadCount: afterSecond.readCount,
   firstExistsCount: afterFirst.existsCount,
   secondExistsCount: afterSecond.existsCount,
+  sameOutputBootstrapPartsAfterFirst,
+  sameOutputBootstrapPartsAfterSecond,
+  sameOutputFirstPartKeys: Object.keys(sameOutputFirstPart).sort(),
+  sameOutputFirstPartText: sameOutputFirstPart?.text,
+  sameOutputFirstPartInheritedField: sameOutputFirstPart?.testOnlyField,
 };
 
-const failures = scenario === 'present'
-  ? assertPresentBootstrap(result)
-  : scenario === 'missing'
-    ? assertMissingBootstrap(result)
-    : scenario === 'local-missing'
-      ? assertLocalMissingBootstrap(result)
-      : assertUnresolvedBootstrap(result);
+const failures = [
+  ...assertRepoRelativePluginSource(result),
+  ...(scenario === 'present'
+    ? assertPresentBootstrap(result)
+    : scenario === 'missing-file'
+      ? assertMissingFileBootstrap(result)
+      : assertMissingSkillsDirBootstrap(result)),
+];
 
 if (failures.length > 0) {
   console.error(JSON.stringify(result, null, 2));
@@ -129,36 +104,41 @@ if (failures.length > 0) {
 
 console.log(JSON.stringify(result, null, 2));
 
-function isBootstrapSkillPath(filePath) {
-  return normalizePath(filePath).includes('using-superpowers/SKILL.md');
-}
-
 function normalizePath(filePath) {
-  return String(filePath).replaceAll('\\', '/');
+  return String(filePath).replaceAll('\\', '/').replace(/^\/private/, '');
 }
 
-function makeOutput(text) {
+function makeOutput(text, firstPart = { type: 'text', text }) {
   return {
     messages: [{
       info: { role: 'user' },
-      parts: [{ type: 'text', text }],
+      parts: [firstPart],
     }],
   };
 }
 
 function countBootstrapParts(output) {
   return output.messages[0].parts.filter(
-    (part) => part.type === 'text' && part.text.includes('EXTREMELY_IMPORTANT')
+    (part) => part.type === 'text' && part.text.includes(bootstrapMarker)
   ).length;
+}
+
+function assertRepoRelativePluginSource(result) {
+  return result.pluginStillReferencesCorePaths
+    ? ['expected plugin source to stop referencing @slowdini/superslow-core/paths']
+    : [];
 }
 
 function assertPresentBootstrap(result) {
   const failures = [];
-  if (result.registeredSkillsPaths.length !== 1) {
-    failures.push(`expected config hook to register one skills path, got ${result.registeredSkillsPaths.length}`);
-  }
-  if (result.registeredSkillsPaths[0] !== expectedSkillsDir) {
-    failures.push(`expected config hook to register consumer project core skillsDir, got ${JSON.stringify(result.registeredSkillsPaths[0])}`);
+
+  if (
+    JSON.stringify(result.registeredSkillsPaths.map(normalizePath)) !==
+    JSON.stringify([expectedSkillsDir].map(normalizePath))
+  ) {
+    failures.push(
+      `expected config hook to register ${JSON.stringify([expectedSkillsDir])}, got ${JSON.stringify(result.registeredSkillsPaths)}`
+    );
   }
   if (result.firstBootstrapParts !== 1) {
     failures.push(`expected first transform to inject one bootstrap part, got ${result.firstBootstrapParts}`);
@@ -175,16 +155,35 @@ function assertPresentBootstrap(result) {
   if (result.secondExistsCount !== result.firstExistsCount) {
     failures.push(`expected cached second transform to do no additional exists checks, got ${result.secondExistsCount - result.firstExistsCount}`);
   }
+  if (result.sameOutputBootstrapPartsAfterFirst !== 1) {
+    failures.push(`expected user text containing EXTREMELY_IMPORTANT to still receive bootstrap injection, got ${result.sameOutputBootstrapPartsAfterFirst}`);
+  }
+  if (result.sameOutputBootstrapPartsAfterSecond !== 1) {
+    failures.push(`expected repeat transform on same output to avoid duplicate bootstrap injection, got ${result.sameOutputBootstrapPartsAfterSecond}`);
+  }
+  if (JSON.stringify(result.sameOutputFirstPartKeys) !== JSON.stringify(['text', 'type'])) {
+    failures.push(`expected injected bootstrap part to contain only type/text keys, got ${JSON.stringify(result.sameOutputFirstPartKeys)}`);
+  }
+  if (result.sameOutputFirstPartInheritedField !== undefined) {
+    failures.push('expected injected bootstrap part to avoid inheriting extra fields from the original first part');
+  }
+  if (typeof result.sameOutputFirstPartText !== 'string' || !result.sameOutputFirstPartText.includes(bootstrapMarker)) {
+    failures.push('expected injected bootstrap part to contain the plugin-specific bootstrap marker');
+  }
+
   return failures;
 }
 
-function assertMissingBootstrap(result) {
+function assertMissingFileBootstrap(result) {
   const failures = [];
-  if (result.registeredSkillsPaths.length !== 1) {
-    failures.push(`expected config hook to register one skills path, got ${result.registeredSkillsPaths.length}`);
-  }
-  if (result.registeredSkillsPaths[0] !== expectedSkillsDir) {
-    failures.push(`expected config hook to register consumer project core skillsDir, got ${JSON.stringify(result.registeredSkillsPaths[0])}`);
+
+  if (
+    JSON.stringify(result.registeredSkillsPaths.map(normalizePath)) !==
+    JSON.stringify([expectedSkillsDir].map(normalizePath))
+  ) {
+    failures.push(
+      `expected config hook to register ${JSON.stringify([expectedSkillsDir])}, got ${JSON.stringify(result.registeredSkillsPaths)}`
+    );
   }
   if (result.firstBootstrapParts !== 0) {
     failures.push(`expected no bootstrap when SKILL.md is missing, got ${result.firstBootstrapParts}`);
@@ -195,57 +194,34 @@ function assertMissingBootstrap(result) {
   if (result.firstReadCount !== 0 || result.secondReadCount !== 0) {
     failures.push(`expected missing file path to avoid reads, got ${result.secondReadCount}`);
   }
-  if (result.firstExistsCount < 1) {
-    failures.push('expected first transform to check whether SKILL.md exists');
+  if (result.firstExistsCount !== 1) {
+    failures.push(`expected missing file path to be checked once, got ${result.firstExistsCount}`);
   }
   if (result.secondExistsCount !== result.firstExistsCount) {
     failures.push(`expected missing-file result to be cached, got ${result.secondExistsCount - result.firstExistsCount} extra exists checks`);
   }
+
   return failures;
 }
 
-function assertUnresolvedBootstrap(result) {
+function assertMissingSkillsDirBootstrap(result) {
   const failures = [];
-  if (result.registeredSkillsPaths.length !== 0) {
-    failures.push(`expected config hook to register no skills path when core is unresolved, got ${result.registeredSkillsPaths.length}`);
-  }
-  if (result.firstBootstrapParts !== 0) {
-    failures.push(`expected no bootstrap when paths are unresolved, got ${result.firstBootstrapParts}`);
-  }
-  if (result.secondBootstrapParts !== 0) {
-    failures.push(`expected no bootstrap on second unresolved transform, got ${result.secondBootstrapParts}`);
-  }
-  if (result.firstReadCount !== 0 || result.secondReadCount !== 0) {
-    failures.push(`expected unresolved paths to avoid reads, got ${result.secondReadCount}`);
-  }
-  if (result.secondExistsCount !== result.firstExistsCount) {
-    failures.push(`expected unresolved paths to avoid extra transform-time exists checks, got ${result.secondExistsCount - result.firstExistsCount}`);
-  }
-  return failures;
-}
 
-function assertLocalMissingBootstrap(result) {
-  const failures = [];
-  if (result.registeredSkillsPaths.length !== 1) {
-    failures.push(`expected config hook to register one local fallback skills path, got ${result.registeredSkillsPaths.length}`);
-  }
-  if (normalizePath(result.registeredSkillsPaths[0]).replace(/^\/private/, '') !== normalizePath(localFallbackSkillsDir).replace(/^\/private/, '')) {
-    failures.push(`expected config hook to register local fallback skills dir, got ${JSON.stringify(result.registeredSkillsPaths[0])}`);
+  if (JSON.stringify(result.registeredSkillsPaths) !== JSON.stringify([])) {
+    failures.push(`expected config hook to register [], got ${JSON.stringify(result.registeredSkillsPaths)}`);
   }
   if (result.firstBootstrapParts !== 0) {
-    failures.push(`expected no bootstrap when local fallback SKILL.md is missing, got ${result.firstBootstrapParts}`);
+    failures.push(`expected no bootstrap when the skills directory is missing, got ${result.firstBootstrapParts}`);
   }
   if (result.secondBootstrapParts !== 0) {
-    failures.push(`expected no bootstrap on second local fallback transform, got ${result.secondBootstrapParts}`);
+    failures.push(`expected no bootstrap on second missing-skills-dir transform, got ${result.secondBootstrapParts}`);
   }
   if (result.firstReadCount !== 0 || result.secondReadCount !== 0) {
-    failures.push(`expected local missing bootstrap to avoid reads, got ${result.secondReadCount}`);
-  }
-  if (result.firstExistsCount < 1) {
-    failures.push('expected local fallback bootstrap path to be checked once');
+    failures.push(`expected missing skills directory to avoid reads, got ${result.secondReadCount}`);
   }
   if (result.secondExistsCount !== result.firstExistsCount) {
-    failures.push(`expected local missing bootstrap result to be cached, got ${result.secondExistsCount - result.firstExistsCount} extra exists checks`);
+    failures.push(`expected missing-skills-dir result to be cached, got ${result.secondExistsCount - result.firstExistsCount} extra exists checks`);
   }
+
   return failures;
 }

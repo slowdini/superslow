@@ -6,69 +6,18 @@
  */
 
 import fs from "node:fs";
-import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const workspaceRequire = createRequire(
-  path.join(process.cwd(), "package.json"),
-);
-const localFallbackSkillsDir = path.resolve(__dirname, "../../core/skills");
-const localFallbackUsingSuperpowersSkillPath = path.join(
-  localFallbackSkillsDir,
+const superpowersSkillsDir = path.resolve(__dirname, "../../core/skills");
+const usingSuperpowersSkillPath = path.join(
+  superpowersSkillsDir,
   "using-superpowers",
   "SKILL.md",
 );
-
-const isCorePathsUnavailableError = (error) => {
-  if (!error || typeof error !== "object") return false;
-
-  const code = error.code;
-  const message = typeof error.message === "string" ? error.message : "";
-  const referencesCorePaths =
-    message.includes("@slowdini/superslow-core/paths") ||
-    message.includes("@slowdini/superslow-core") ||
-    message.includes('Package subpath "./paths"') ||
-    message.includes("Package subpath './paths'");
-
-  return (
-    referencesCorePaths &&
-    (code === "ERR_MODULE_NOT_FOUND" ||
-      code === "MODULE_NOT_FOUND" ||
-      code === "ERR_PACKAGE_PATH_NOT_EXPORTED")
-  );
-};
-
-// Resolve core skills directory at runtime
-// Works in both workspace (symlinked) and npm-installed contexts
-let superpowersSkillsDir;
-let usingSuperpowersSkillPath;
-try {
-  const corePathsModule = await import("@slowdini/superslow-core/paths");
-  const corePaths = corePathsModule.default ?? corePathsModule;
-  superpowersSkillsDir = corePaths.skillsDir;
-  usingSuperpowersSkillPath = corePaths.usingSuperpowersSkillPath;
-} catch (error) {
-  if (!isCorePathsUnavailableError(error)) throw error;
-
-  try {
-    const corePaths = workspaceRequire("@slowdini/superslow-core/paths");
-    superpowersSkillsDir = corePaths.skillsDir;
-    usingSuperpowersSkillPath = corePaths.usingSuperpowersSkillPath;
-  } catch (requireError) {
-    if (!isCorePathsUnavailableError(requireError)) throw requireError;
-
-    if (fs.existsSync(localFallbackSkillsDir)) {
-      superpowersSkillsDir = localFallbackSkillsDir;
-    }
-
-    if (fs.existsSync(localFallbackUsingSuperpowersSkillPath)) {
-      usingSuperpowersSkillPath = localFallbackUsingSuperpowersSkillPath;
-    }
-  }
-}
+const bootstrapMarker = "SUPERSLOW_OPENCODE_BOOTSTRAP";
 
 // Simple frontmatter extraction (avoid dependency on skills-core for bootstrap)
 const extractAndStripFrontmatter = (content) => {
@@ -127,11 +76,6 @@ export const SuperpowersPlugin = async ({
     if (_bootstrapCache !== undefined) return _bootstrapCache;
 
     // Try to load using-superpowers skill
-    if (!usingSuperpowersSkillPath) {
-      _bootstrapCache = null;
-      return null;
-    }
-
     if (!fs.existsSync(usingSuperpowersSkillPath)) {
       _bootstrapCache = null;
       return null;
@@ -149,7 +93,8 @@ When skills reference tools you don't have, substitute OpenCode equivalents:
 
 Use OpenCode's native \`skill\` tool to list and load skills.`;
 
-    _bootstrapCache = `<EXTREMELY_IMPORTANT>
+    _bootstrapCache = `<!-- ${bootstrapMarker} -->
+<EXTREMELY_IMPORTANT>
 You have superpowers.
 
 **IMPORTANT: The using-superpowers skill content is included below. It is ALREADY LOADED - you are currently following it. Do NOT use the skill tool to load "using-superpowers" again - that would be redundant.**
@@ -171,7 +116,7 @@ ${toolMapping}
       config.skills = config.skills || {};
       config.skills.paths = config.skills.paths || [];
       if (
-        superpowersSkillsDir &&
+        fs.existsSync(superpowersSkillsDir) &&
         !config.skills.paths.includes(superpowersSkillsDir)
       ) {
         config.skills.paths.push(superpowersSkillsDir);
@@ -193,18 +138,16 @@ ${toolMapping}
       const firstUser = output.messages.find((m) => m.info.role === "user");
       if (!firstUser?.parts.length) return;
 
-      // Guard: skip if first user message already contains bootstrap.
+      // Guard: skip only when the leading part is the bootstrap we injected.
       // This prevents double injection when OpenCode passes an already
       // transformed in-memory message array through the hook again.
       if (
-        firstUser.parts.some(
-          (p) => p.type === "text" && p.text.includes("EXTREMELY_IMPORTANT"),
-        )
+        firstUser.parts[0]?.type === "text" &&
+        firstUser.parts[0].text.includes(bootstrapMarker)
       )
         return;
 
-      const ref = firstUser.parts[0];
-      firstUser.parts.unshift({ ...ref, type: "text", text: bootstrap });
+      firstUser.parts.unshift({ type: "text", text: bootstrap });
     },
   };
 };

@@ -137,10 +137,9 @@ README notes the standard caveat about reviewing curl-piped shell scripts.
 
 ### OpenCode
 
-- `packages/opencode/package.json`: move `@slowdini/superslow-core` from
-  `peerDependencies` to `dependencies`. Bun replaces the `workspace:*`
-  specifier with the published version at publish time, so users get core
-  via standard npm resolution.
+- `package.json`: expose the repo root as the OpenCode package surface so
+  installs use the repository Git URL and ship the plugin plus bundled core
+  skills from one package artifact.
 - `packages/opencode/INSTALL.md`: every `obra/superpowers` retargeted to
   `slowdini/superslow`; every `@slowdini/superpowers-*` retargeted to
   `@slowdini/superslow-*`.
@@ -201,12 +200,15 @@ Files moved or created:
 
 ## Package privacy
 
-Of the six packages, only `core` and `opencode` are published to npm.
-`claude`, `codex`, `cursor`, and `gemini` ship via git-based install paths
-and have `package.json` only for workspace identification. Each of those
-four gets `"private": true` in its `package.json` so `bun publish` skips
-them. The existing `publish:all` script (`bun run --filter '*' publish
---access public`) needs no change — bun respects the privacy flag.
+All six workspace packages are private internal metadata. Superslow no longer
+publishes `core` or `opencode` to npm; OpenCode installs from the repository
+Git URL via the repo root package surface instead. The repo no longer keeps
+the old bulk publish script, and the release flow uses Git tags plus GitHub
+releases.
+
+Gemini remains a separate harness verification task. Do not fold Gemini
+extension packaging or root-manifest fixes into the OpenCode package-surface
+change.
 
 ## Content rewrites
 
@@ -304,12 +306,10 @@ First release of Superslow. Forked from
 4. From `main`:
    - `git tag -a v1.0.0 -m "Superslow 1.0.0"`
    - `git push origin main v1.0.0`
-   - `bun run publish:all` (publishes `@slowdini/superslow-core` and
-     `@slowdini/superslow-opencode` to npm; requires `npm login` with
-     publish rights on the `@slowdini` org — confirmed available).
    - `gh release create v1.0.0` with notes drawn from the `CHANGELOG.md`
      v1.0.0 entry.
-5. Run the per-harness smoke tests (Verification section below).
+5. Run the per-harness smoke tests that are in scope. OpenCode uses the repo
+   Git install flow. Gemini remains a separate follow-up verification item.
 6. If any smoke test fails: fix on a new branch, repeat from step 1 with
    `1.0.1`.
 
@@ -354,9 +354,8 @@ writing code (or describing implementation). This proves the
 
 ### Failure recovery
 
-- npm packages are immutable once published. A broken `core`/`opencode`
-  requires a `1.0.1` patch release.
-- Git-installed harnesses (Claude/Codex/Cursor/Gemini) can be fixed on
-  `main` without a version bump, but a `1.0.1` tag is cut anyway for
-  hygiene so users have a known-good version reference.
+- Git tags and GitHub releases are the release boundary. A broken tagged
+  release requires a `1.0.1` patch release.
+- Fixes can land on `main` for verification, but a `1.0.1` tag is cut anyway
+  so users have a known-good version reference.
 - The user is prepared for several incremental bugfix releases.

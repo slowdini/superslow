@@ -7,6 +7,15 @@
   "workspaces": [
     "packages/*"
   ],
+  "exports": {
+    "./server": "./packages/opencode/plugins/superpowers.js"
+  },
+  "files": [
+    "README.md",
+    "LICENSE",
+    "packages/opencode/plugins/",
+    "packages/core/skills/"
+  ],
   "scripts": {
     "test": "bun run --filter '*' test",
     "test:core": "bun run --filter core test",
@@ -16,9 +25,7 @@
     "test:opencode": "bun run --filter opencode test",
     "test:gemini": "bun run --filter gemini test",
     "version": "node scripts/bump-version.js",
-    "publish:all": "bun run --filter '*' publish --access public",
-    "check": "biome check --write . && markdownlint-cli2 --fix '**/*.md' '!**/node_modules/**' '!**/.worktrees/**'",
-    "prepare": "husky"
+    "check": "biome check --write . && markdownlint-cli2 --fix '**/*.md' '!**/node_modules/**' '!**/.worktrees/**'"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.15",
