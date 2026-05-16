@@ -17,7 +17,7 @@ release notes live in [`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Quickstart
 
-Give your agent Superslow: [Claude Code](#claude-code) · [Codex CLI](#codex-cli) · [Cursor](#cursor) · [OpenCode](#opencode) · [Gemini CLI](#gemini-cli).
+Give your agent Superslow: [Claude Code](#claude-code) · [Copilot CLI](#copilot-cli) · [Codex CLI](#codex-cli) · [Cursor](#cursor) · [OpenCode](#opencode) · [Gemini CLI](#gemini-cli).
 
 ## How it works
 
@@ -38,6 +38,13 @@ Superslow separately for each.
 ```
 /plugin marketplace add slowdini/superslow
 /plugin install superpowers@superslow
+```
+
+### Copilot CLI
+
+```bash
+copilot plugin marketplace add slowdini/superslow
+copilot plugin install superslow@slowdini
 ```
 
 ### Codex CLI
