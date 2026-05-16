@@ -27,7 +27,7 @@ Eliminate Claude-Code-specific tool-name references from skills and harness inst
 
 ## In Scope
 
-Fourteen files across four categories.
+Sixteen files across four categories.
 
 ### Reference mapping files (delete)
 
@@ -42,24 +42,26 @@ Combined ~152 lines, deleted in full.
 | File | Changes |
 |------|---------|
 | `skills/using-superpowers/SKILL.md` | Rewrite "How to Access Skills" and "Platform Adaptation" sections; update flow-diagram nodes referencing `TodoWrite`; add one-line philosophy mention |
-| `skills/subagent-driven-development/SKILL.md` | Rewrite flow-diagram nodes (`TodoWrite` x2) and prose mentions |
-| `skills/writing-skills/SKILL.md` | Replace `Task tool` (2) and `TodoWrite` (1) mentions; add glossary section |
+| `skills/subagent-driven-development/SKILL.md` | Rewrite flow-diagram nodes (`TodoWrite` x4) and prose mention |
+| `skills/writing-skills/SKILL.md` | Replace `TodoWrite` mention; add glossary section |
 | `skills/writing-skills/persuasion-principles.md` | Replace `TodoWrite` mentions (3) |
-| `skills/brainstorming/visual-companion.md` | Replace `Bash` mentions (3) |
+| `skills/brainstorming/visual-companion.md` | Replace `Bash tool` (2) and `Write tool` (1) mentions |
+| `skills/requesting-code-review/SKILL.md` | Rewrite `Task tool` mention at line 34 |
 
 ### Subagent prompt templates (rewrite)
 
-All five use the same `Task tool (general-purpose)` phrasing and get the same replacement.
+All six use the same `Task tool (general-purpose)` phrasing and get the same replacement.
 
 - `skills/brainstorming/spec-document-reviewer-prompt.md`
 - `skills/writing-plans/plan-document-reviewer-prompt.md`
 - `skills/subagent-driven-development/implementer-prompt.md`
 - `skills/subagent-driven-development/spec-reviewer-prompt.md`
 - `skills/subagent-driven-development/code-quality-reviewer-prompt.md`
+- `skills/requesting-code-review/code-reviewer.md`
 
 ### Harness install doc
 
-- `opencode/INSTALL.md` lines 108–110 (tool name references in install instructions)
+- `opencode/INSTALL.md` — delete the entire "Tool mapping" section (lines 104–111). Once skills no longer reference Claude tool names, the mapping table is dead documentation.
 
 ## Out of Scope
 
