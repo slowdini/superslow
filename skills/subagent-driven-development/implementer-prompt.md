@@ -3,7 +3,7 @@
 Use this template when dispatching an implementer subagent.
 
 ```
-Task tool (general-purpose):
+Dispatch a general-purpose subagent:
   description: "Implement Task N: [task name]"
   prompt: |
     You are implementing Task N: [task name]
