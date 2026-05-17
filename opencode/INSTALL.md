@@ -101,15 +101,6 @@ expands it in plugin paths.
 1. Use `skill` tool to list what's discovered
 2. Check that the plugin is loading (see above)
 
-### Tool mapping
-
-When skills reference Claude Code tools:
-
-- `TodoWrite` -> `todowrite`
-- `Task` with subagents -> `@mention` syntax
-- `Skill` tool -> OpenCode's native `skill` tool
-- File operations -> your native tools
-
 ## Getting Help
 
 - [Report issues](https://github.com/slowdini/superslow/issues)
