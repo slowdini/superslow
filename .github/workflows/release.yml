@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  release:
+    name: Tag and create GitHub release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read version from package.json
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Version on main: $VERSION"
+
+      - name: Check if tag already exists (idempotency)
+        id: tag-check
+        run: |
+          if git rev-parse "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "Tag ${{ steps.version.outputs.tag }} already exists — skipping release."
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create and push tag
+        if: steps.tag-check.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag "${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+
+      - name: Build release notes
+        if: steps.tag-check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_BODY=$(gh pr list \
+            --state merged \
+            --base main \
+            --limit 1 \
+            --json body \
+            --jq '.[0].body // ""')
+
+          if [ -n "$PR_BODY" ] && ! echo "$PR_BODY" | grep -q "Replace this paragraph"; then
+            echo "Using release PR body for notes."
+            printf '%s\n' "$PR_BODY" > /tmp/release-notes.md
+          else
+            echo "Falling back to auto-generated notes."
+            PREVIOUS_TAG=$(git tag --sort=-creatordate \
+              | grep -v "^${{ steps.version.outputs.tag }}$" \
+              | head -n1)
+            if [ -n "$PREVIOUS_TAG" ]; then
+              gh api "repos/${{ github.repository }}/releases/generate-notes" \
+                -f tag_name="${{ steps.version.outputs.tag }}" \
+                -f previous_tag_name="$PREVIOUS_TAG" \
+                --jq '.body' > /tmp/release-notes.md
+            else
+              gh api "repos/${{ github.repository }}/releases/generate-notes" \
+                -f tag_name="${{ steps.version.outputs.tag }}" \
+                --jq '.body' > /tmp/release-notes.md
+            fi
+          fi
+
+          echo "--- Release notes preview ---"
+          cat /tmp/release-notes.md
+          echo "--- end preview ---"
+
+      - name: Create GitHub release
+        if: steps.tag-check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --title "Superslow ${{ steps.version.outputs.tag }}" \
+            --notes-file /tmp/release-notes.md

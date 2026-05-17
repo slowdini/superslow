@@ -158,6 +158,20 @@ Flat layout — skills and assets live at root, harness-specific integration liv
 See [`CLAUDE.md`](./CLAUDE.md) for contributor guidelines. Issues live at
 <https://github.com/slowdini/superslow/issues>.
 
+## Releasing
+
+Releases are cut from `dev` and tagged from `main`:
+
+1. Merge feature PRs into `dev` after CI passes.
+2. When ready to ship, trigger the **Release PR** workflow with the next
+   version number. It bumps every manifest via `scripts/bump-version.js`,
+   commits to `dev`, and opens a `dev → main` PR.
+3. Review the release PR (full test matrix runs on it) and merge.
+4. Merging to `main` automatically tags `vX.Y.Z` and creates the GitHub
+   release. Notes come from the release PR body, or auto-generated if empty.
+
+See `.github/workflows/` for the workflow definitions.
+
 ## License
 
 MIT — see [`LICENSE`](./LICENSE).
