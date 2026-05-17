@@ -79,6 +79,79 @@ language migration trusts each platform's agent to use its native tools."
 
 ---
 
+## Task 1B: Remove dangling include in gemini-instructions.md
+
+Added after the Task 1 code-quality review caught a scope gap: `gemini-instructions.md` includes the deleted `references/gemini-tools.md` via `@./` syntax. Without this fix, Gemini CLI users hit a missing-file error on startup.
+
+**Files:**
+
+- Modify: `gemini-instructions.md`
+
+- [ ] **Step 1: Verify current state**
+
+Run:
+
+```bash
+cat gemini-instructions.md
+```
+
+Expected:
+
+```
+@./skills/using-superpowers/SKILL.md
+@./skills/using-superpowers/references/gemini-tools.md
+```
+
+- [ ] **Step 2: Remove the dangling include line**
+
+Use Edit to replace this block:
+
+```
+@./skills/using-superpowers/SKILL.md
+@./skills/using-superpowers/references/gemini-tools.md
+```
+
+With:
+
+```
+@./skills/using-superpowers/SKILL.md
+```
+
+- [ ] **Step 3: Verify post-state**
+
+Run:
+
+```bash
+cat gemini-instructions.md
+```
+
+Expected: only the `@./skills/using-superpowers/SKILL.md` line (plus a trailing newline).
+
+- [ ] **Step 4: Run lint**
+
+Run:
+
+```bash
+bun run check
+```
+
+Expected: `0 error(s)`.
+
+- [ ] **Step 5: Commit**
+
+Run:
+
+```bash
+git add gemini-instructions.md
+git commit -m "fix(gemini): drop dangling include of deleted gemini-tools.md
+
+Task 1 deleted skills/using-superpowers/references/gemini-tools.md but the
+Gemini extension's instructions file still included it via @./ syntax,
+which would error on extension load. Removing that line."
+```
+
+---
+
 ## Task 2: Rewrite using-superpowers/SKILL.md
 
 Rewrites three sections: the frontmatter description, "How to Access Skills" (lines 28–36), and "Platform Adaptation" (lines 38–40). Also updates two flow-diagram nodes that reference `TodoWrite`.

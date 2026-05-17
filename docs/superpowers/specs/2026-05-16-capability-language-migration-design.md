@@ -27,7 +27,7 @@ Eliminate Claude-Code-specific tool-name references from skills and harness inst
 
 ## In Scope
 
-Sixteen files across four categories.
+Seventeen files across five categories.
 
 ### Reference mapping files (delete)
 
@@ -63,6 +63,10 @@ All six use the same `Task tool (general-purpose)` phrasing and get the same rep
 
 - `opencode/INSTALL.md` — delete the entire "Tool mapping" section (lines 104–111). Once skills no longer reference Claude tool names, the mapping table is dead documentation.
 
+### Harness extension includes
+
+- `gemini-instructions.md` — remove the include line that points at the deleted `references/gemini-tools.md`. The file is the Gemini CLI extension's instruction file (loaded via `@./` includes), and Task 1 leaves it pointing at a deleted reference.
+
 ## Out of Scope
 
 Explicitly excluded so they do not get bolted into this PR:
@@ -71,7 +75,7 @@ Explicitly excluded so they do not get bolted into this PR:
 - **Test files** — none assert on tool-name strings.
 - **Skills with no tool references** — left untouched. This is not a stylistic sweep.
 - **`docs/superpowers/upstream-CLAUDE.md`** — frozen historical reference.
-- **Repo-level docs** (`CLAUDE.md`, `README.md`, `gemini-instructions.md`) — describe the project, not the agent's instructions.
+- **Repo-level docs** (`CLAUDE.md`, `README.md`) — describe the project, not the agent's instructions.
 - **Hooks, scripts, code** — pure prose migration.
 - **Adversarial pressure testing** — future work; this migration becomes the first input to that effort.
 - **A lint rule for tool-name strings** — over-fires on legitimate cases (code examples, the load-bearing `Skill` mentions, quoted output). Discipline lives in the glossary plus PR review.
