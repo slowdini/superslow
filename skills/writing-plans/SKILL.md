@@ -20,9 +20,10 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 ```bash
 BRANCH=$(git branch --show-current)
 DEFAULT=$(git rev-parse --abbrev-ref origin/HEAD 2>/dev/null | sed 's|^origin/||')
-if [ "$BRANCH" = "$DEFAULT" ] || [ "$BRANCH" = "main" ] || [ "$BRANCH" = "master" ]; then
-    # On a protected branch — invoke using-git-worktrees to create isolation
-fi
+case "$BRANCH" in
+    "$DEFAULT"|main|master) echo "PROTECTED — invoke superslow:using-git-worktrees" ;;
+    *) echo "OK — on feature branch $BRANCH" ;;
+esac
 ```
 
 - **If already isolated:** Write and commit in place
