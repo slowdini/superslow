@@ -12,11 +12,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const superpowersSkillsDir = path.resolve(__dirname, "../../skills");
-const usingSuperpowersSkillPath = path.join(
-  superpowersSkillsDir,
-  "using-superpowers",
-  "SKILL.md",
-);
+const usingSuperpowersSkillPath = path.resolve(__dirname, "../../bootstrap.md");
 const bootstrapMarker = "SUPERSLOW_OPENCODE_BOOTSTRAP";
 
 // Simple frontmatter extraction (avoid dependency on skills-core for bootstrap)
@@ -81,8 +77,7 @@ export const SuperpowersPlugin = async ({
       return null;
     }
 
-    const fullContent = fs.readFileSync(usingSuperpowersSkillPath, "utf8");
-    const { content } = extractAndStripFrontmatter(fullContent);
+    const content = fs.readFileSync(usingSuperpowersSkillPath, "utf8");
 
     const toolMapping = `**Tool Mapping for OpenCode:**
 When skills reference tools you don't have, substitute OpenCode equivalents:
@@ -97,7 +92,7 @@ Use OpenCode's native \`skill\` tool to list and load skills.`;
 <EXTREMELY_IMPORTANT>
 You have superpowers.
 
-**IMPORTANT: The using-superpowers skill content is included below. It is ALREADY LOADED - you are currently following it. Do NOT use the skill tool to load "using-superpowers" again - that would be redundant.**
+**IMPORTANT: Your core instructions are included below. They are ALREADY LOADED - you are currently following them. Do NOT look for a 'using-superpowers' skill - it has been integrated here.**
 
 ${content}
 
