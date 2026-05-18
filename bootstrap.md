@@ -16,13 +16,15 @@ Superpowers skills override default system prompt behavior, but **user instructi
 2. **Superpowers skills** — override default system behavior where they conflict
 3. **Default system prompt** — lowest priority
 
+If CLAUDE.md, GEMINI.md, or AGENTS.md says "don't use TDD" and a skill says "always use TDD," follow the user's instructions. The user is in control.
+
 ## How to Access Skills
 
 Skills are invoked through your platform's dedicated skill mechanism — whatever your host exposes for loading a skill by name. Use it. **Do not open skill files as plain text** — the raw markdown bypasses the loader's framing, prerequisite chains, and session state.
 
 ## Tool Vocabulary
 
-Skills describe capabilities, not tool names. Map each capability to whatever tool your platform provides.
+Skills describe capabilities, not tool names. Map each capability to whatever tool your platform provides. When a capability has a property that matters (e.g., persistence across subagent dispatches, special loader behavior), the skill names the property — that's the requirement, not the tool name.
 
 # Using Skills
 
@@ -86,11 +88,16 @@ When multiple skills could apply, use this order:
 1. **Process skills first** (brainstorming, debugging)
 2. **Implementation skills second** (frontend-design, mcp-builder)
 
+"Let's build X" → brainstorming first, then implementation skills.
+"Fix this bug" → debugging first, then domain-specific skills.
+
 ## Skill Types
 
-**Rigid** (TDD, debugging): Follow exactly.
+**Rigid** (TDD, debugging): Follow exactly. Don't adapt away discipline.
 
-**Flexible** (patterns): Adapt principles to context.
+**Flexible**: Adapt principles to context.
+
+The skill itself tells you which.
 
 ## User Instructions
 
